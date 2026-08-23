@@ -1,0 +1,1227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Human Mind</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+body{overflow-x:hidden;overflow-y:auto;background:#080b18;color:#f6f3ff;transition:background 2.2s ease,color 1.5s ease}
+body.romantic{background:radial-gradient(circle at 50% 8%,#f7dfe7 0,#e8bdcf 44%,#b986a4 100%);color:#382532}
+.app{min-height:100vh;display:grid;place-items:center;padding:22px;position:relative;overflow:visible}
+.card{width:min(760px,100%);padding:40px;border-radius:30px;background:rgba(12,17,38,.84);border:1px solid rgba(174,147,255,.24);box-shadow:0 30px 100px rgba(0,0,0,.48);backdrop-filter:blur(18px);position:relative;z-index:20;transition:opacity 1.25s,transform 1.35s,filter 1.25s}
+.card.dissolve{opacity:0;transform:scale(.86) translateY(10px);filter:blur(20px)}
+.top{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.58}
+.progress{height:5px;border-radius:8px;background:#252844;margin:18px 0 30px;overflow:hidden}
+.progress i{display:block;height:100%;width:25%;background:linear-gradient(90deg,#7651ff,#cb6eff);transition:width .5s}
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.52}
+h1{font-family:Georgia,serif;font-size:clamp(40px,7vw,72px);line-height:.98;margin:20px 0 14px}
+p{line-height:1.65;opacity:.72}
+.question{font-family:Georgia,serif;font-size:clamp(21px,3.1vw,31px);line-height:1.3;margin:28px 0;letter-spacing:-.012em}
+.answers{display:grid;gap:12px}
+button{font:inherit}
+button.answer{padding:17px;border-radius:15px;text-align:left;color:#fff;background:rgba(255,255,255,.055);border:1px solid rgba(174,147,255,.23);cursor:pointer;transition:.22s}
+button.answer:hover{transform:translateY(-2px);background:rgba(133,88,255,.2)}
+button.answer:disabled{cursor:default;opacity:.7}
+.feedback{min-height:62px;margin-top:20px;padding:14px 16px;border-radius:15px;background:rgba(255,255,255,.04);display:none}
+.feedback.show{display:block;animation:pop .4s ease}
+.feedback.good{border:1px solid rgba(130,255,192,.25)}
+.feedback.bad{border:1px solid rgba(255,181,181,.22)}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.next{margin-top:12px!important;text-align:center!important;background:linear-gradient(135deg,#a64d76,#df8ca9)!important;border:0!important}
+.small{text-align:center;font-size:11px;opacity:.4;margin-top:17px}
+.romantic .card{background:rgba(255,246,249,.86);border-color:rgba(82,42,61,.18);box-shadow:0 30px 100px rgba(65,28,52,.26);color:#382532}
+.romantic .progress{background:#ead4dc}.romantic .progress i{background:linear-gradient(90deg,#c25d89,#edabc0)}
+.romantic button.answer{color:#49303d;background:rgba(255,255,255,.55);border-color:rgba(112,58,82,.13)}
+.noCount{text-align:center;font-size:11px;opacity:.5;margin-top:12px}
+
+#liquidCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:70;pointer-events:none;opacity:0}
+#liquidCanvas.active{opacity:1}
+#dissolveLight{position:fixed;inset:0;z-index:71;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 48%,rgba(255,238,242,.95) 0,rgba(236,133,177,.55) 27%,rgba(89,28,101,.5) 62%,rgba(23,8,34,.15) 100%);mix-blend-mode:screen}
+#dissolveLight.active{animation:lightSweep 3.5s ease forwards}
+@keyframes lightSweep{
+0%{opacity:0;transform:scale(.25)}
+28%{opacity:.5;transform:scale(.65)}
+55%{opacity:.9;transform:scale(1.05)}
+76%{opacity:.65;transform:scale(1.5)}
+100%{opacity:0;transform:scale(2.1)}
+}
+#revealWash{position:fixed;inset:0;z-index:72;pointer-events:none;background:#fff1f2;opacity:0}
+#revealWash.active{animation:wash 1.7s ease forwards}
+@keyframes wash{0%{opacity:0}55%{opacity:.82}100%{opacity:0}}
+
+#garden{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity 2.3s ease}
+body.gardenReady #garden{opacity:1}
+.gardenMist{position:absolute;inset:-20%;background:
+radial-gradient(ellipse at 10% 20%,rgba(255,245,247,.34) 0 12%,transparent 32%),
+radial-gradient(ellipse at 88% 18%,rgba(248,205,220,.34) 0 13%,transparent 34%),
+radial-gradient(ellipse at 30% 88%,rgba(248,220,224,.28) 0 15%,transparent 38%),
+radial-gradient(ellipse at 78% 78%,rgba(174,117,148,.28) 0 15%,transparent 36%);
+filter:blur(15px)}
+.blossom{position:absolute;font-size:clamp(62px,10vw,150px);opacity:.16;filter:blur(.7px);animation:sway 7s ease-in-out infinite}
+@keyframes sway{50%{transform:translate3d(0,-12px,0) rotate(5deg) scale(1.04)}}
+#petals{position:absolute;inset:0;overflow:hidden;opacity:0;transition:opacity 1.5s ease}
+body.petalRain #petals{opacity:1}
+.petal{position:absolute;top:-70px;width:12px;height:19px;border-radius:75% 20% 70% 25%;background:linear-gradient(135deg,#df88aa,#f7d5dd);box-shadow:0 3px 12px rgba(98,42,71,.13);animation:petalFall linear infinite}
+@keyframes petalFall{to{transform:translate3d(var(--drift),112vh,0) rotate(720deg)}}
+#centerBloom{position:fixed;z-index:76;left:50%;top:50%;font-size:125px;opacity:0;transform:translate(-50%,-50%) scale(.05);pointer-events:none}
+#centerBloom.active{animation:bloom 2.4s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes bloom{
+0%{opacity:0;transform:translate(-50%,-50%) scale(.05) rotate(-25deg)}
+24%{opacity:1;transform:translate(-50%,-50%) scale(1.3) rotate(8deg)}
+56%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}
+}
+
+@media(max-width:600px){.card{padding:27px 21px}.question{margin:23px 0}}
+
+#glitchScreen{position:fixed;inset:0;z-index:78;display:grid;place-items:center;background:#070913;color:#d9d7e8;opacity:0;pointer-events:none}
+#glitchScreen.active{opacity:1;animation:glitchFade 2.7s ease forwards}
+.glitchBox{width:min(620px,88vw);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-align:center;letter-spacing:.12em}
+.glitchLine{font-size:11px;opacity:.5;margin:12px 0}
+.glitchError{font-size:clamp(30px,7vw,68px);font-weight:800;letter-spacing:.06em;position:relative;animation:glitchText .16s steps(2,end) infinite}
+.glitchError:before,.glitchError:after{content:"SYSTEM ERROR";position:absolute;inset:0;opacity:.7}
+.glitchError:before{transform:translate(3px,-2px);color:#d77aa2;clip-path:inset(20% 0 55% 0)}
+.glitchError:after{transform:translate(-3px,2px);color:#7a8dca;clip-path:inset(58% 0 12% 0)}
+.glitchBar{height:2px;background:#3a3d50;overflow:hidden;margin:28px 0}
+.glitchBar i{display:block;height:100%;width:0;background:#d77aa2;animation:glitchLoad 1.9s steps(8,end) forwards}
+@keyframes glitchLoad{to{width:100%}}
+@keyframes glitchText{50%{transform:translate(1px,-1px);filter:blur(.5px)}}
+@keyframes glitchFade{0%,68%{opacity:1}100%{opacity:0}}
+
+
+.blossom span{display:block;width:1em;height:1em;position:relative;filter:blur(.2px)}
+.blossom span:before{content:"";position:absolute;left:28%;top:0;width:44%;height:100%;border-radius:50%;background:rgba(119,63,92,.18);box-shadow:
+-0.30em 0.30em 0 rgba(119,63,92,.16),
+0.30em 0.30em 0 rgba(119,63,92,.16),
+0 0.62em 0 rgba(119,63,92,.14)}
+.blossom span:after{content:"";position:absolute;left:42%;top:42%;width:16%;height:16%;border-radius:50%;background:rgba(245,211,218,.65)}
+
+
+#centerBloom:before,#centerBloom:after{content:"";position:absolute;left:50%;top:50%;width:92px;height:92px;border-radius:50%;background:rgba(235,174,194,.9);transform:translate(-50%,-50%);box-shadow:
+0 -64px 0 -8px rgba(225,139,171,.72),
+45px -45px 0 -8px rgba(225,139,171,.72),
+64px 0 0 -8px rgba(225,139,171,.72),
+45px 45px 0 -8px rgba(225,139,171,.72),
+0 64px 0 -8px rgba(225,139,171,.72),
+-45px 45px 0 -8px rgba(225,139,171,.72),
+-64px 0 0 -8px rgba(225,139,171,.72),
+-45px -45px 0 -8px rgba(225,139,171,.72)}
+#centerBloom:after{width:28px;height:28px;background:#f7d7df;box-shadow:none}
+
+
+/* V6: more expressive typography */
+.eyebrow{
+  animation:labelIn .7s ease both;
+  transform-origin:left center;
+}
+h1{
+  animation:titleIn .8s cubic-bezier(.2,.8,.2,1) both;
+  letter-spacing:-.025em;
+}
+p,.question,.answers,.small{
+  animation:contentIn .75s .12s ease both;
+}
+@keyframes labelIn{from{opacity:0;transform:translateY(8px);letter-spacing:.3em}to{opacity:.52;transform:none;letter-spacing:.2em}}
+@keyframes titleIn{from{opacity:0;transform:translateY(22px) scale(.98);filter:blur(7px)}to{opacity:1;transform:none;filter:none}}
+@keyframes contentIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.answer{
+  animation:answerIn .55s ease both;
+}
+.answer:nth-child(2){animation-delay:.06s}.answer:nth-child(3){animation-delay:.12s}.answer:nth-child(4){animation-delay:.18s}
+@keyframes answerIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.feedback.show{animation:feedbackReveal .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes feedbackReveal{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+
+.typewriter{
+  position:relative;
+  min-height:7.5em;
+  line-height:1.9;
+  opacity:.82;
+  font-size:clamp(15px,1.8vw,18px);
+  text-align:left;
+  max-width:620px;
+  margin:0 auto;
+}
+.typewriter::after{
+  content:"";
+  display:inline-block;
+  width:2px;
+  height:1.05em;
+  margin-left:4px;
+  vertical-align:-.15em;
+  background:currentColor;
+  animation:caretBlink .8s steps(1,end) infinite;
+}
+@keyframes caretBlink{50%{opacity:0}}
+.endingLine{
+  font-family:Georgia,serif;
+  font-size:clamp(24px,4vw,36px);
+  line-height:1.2;
+  margin:28px auto 8px;
+  opacity:0;
+  transform:translateY(10px);
+  animation:endingLineIn 1s .5s ease forwards;
+}
+@keyframes endingLineIn{to{opacity:1;transform:none}}
+
+
+/* V7: cinematic typography */
+.heroText{
+  position:relative;
+  display:inline-block;
+  animation:heroReveal .9s cubic-bezier(.2,.8,.2,1) both;
+}
+.heroText::after{
+  content:"";
+  position:absolute;
+  left:-4%;
+  right:-4%;
+  top:52%;
+  height:55%;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.26),transparent);
+  transform:translateX(-120%) skewX(-18deg);
+  opacity:0;
+}
+.heroText.shimmer::after{animation:textShimmer 1.2s ease forwards}
+.softFlicker{
+  animation:softFlicker 4.8s ease-in-out infinite;
+  text-shadow:0 0 0 rgba(255,255,255,0);
+}
+.question .softFlicker{
+  animation-duration:5.6s;
+}
+@keyframes heroReveal{
+  0%{opacity:0;transform:translateY(18px);filter:blur(9px)}
+  65%{opacity:1;transform:translateY(-1px);filter:blur(0)}
+  100%{opacity:1;transform:none;filter:none}
+}
+@keyframes textShimmer{
+  0%{opacity:0;transform:translateX(-120%) skewX(-18deg)}
+  25%{opacity:.9}
+  100%{opacity:0;transform:translateX(120%) skewX(-18deg)}
+}
+@keyframes softFlicker{
+  0%,78%,100%{opacity:1;text-shadow:0 0 0 rgba(255,255,255,0)}
+  80%{opacity:.88;text-shadow:0 0 16px rgba(255,220,232,.22)}
+  82%{opacity:1;text-shadow:0 0 5px rgba(255,220,232,.12)}
+  84%{opacity:.94}
+  86%{opacity:1}
+}
+.romantic .question{
+  animation:questionArrival .95s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes questionArrival{
+  from{opacity:0;transform:translateY(14px);filter:blur(6px)}
+  to{opacity:1;transform:none;filter:none}
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+body{font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,.question,.endingLine{font-family:"Cormorant Garamond",Georgia,serif}
+.glitchBox{font-family:"Space Mono",ui-monospace,SFMono-Regular,Consolas,monospace}
+.romantic h1{font-weight:600;letter-spacing:-.025em}
+.romantic .question{font-weight:500}
+
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Space+Mono:wght@400;700&display=swap');
+
+body{font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,.question,.endingLine{font-family:"Playfair Display",Georgia,serif}
+h1{font-weight:600;letter-spacing:-.035em}
+.romantic h1{font-style:italic;font-weight:600}
+.question{
+  font-size:clamp(27px,4.2vw,43px);
+  font-weight:600;
+  letter-spacing:-.02em;
+  color:#2f2029;
+  text-shadow:0 1px 0 rgba(255,255,255,.45);
+  min-height:2.1em;
+}
+.romantic .question{color:#30202a}
+.questionType{
+  display:inline;
+  white-space:pre-wrap;
+}
+.questionType::after{
+  content:"";
+  display:inline-block;
+  width:2px;
+  height:.9em;
+  margin-left:5px;
+  vertical-align:-.08em;
+  background:currentColor;
+  animation:questionCaret .72s steps(1,end) infinite;
+}
+.questionType.done::after{animation:none;opacity:0}
+@keyframes questionCaret{50%{opacity:0}}
+
+.reactionMark{
+  font-size:clamp(38px,7vw,62px);
+  display:inline-block;
+  margin-bottom:4px;
+  animation:reactionFloat 1.8s ease-in-out infinite;
+}
+@keyframes reactionFloat{50%{transform:translateY(-5px) rotate(-2deg)}}
+
+.reactionTitle{
+  font-family:"Playfair Display",Georgia,serif;
+  font-style:italic;
+  font-weight:600;
+}
+
+.eyebrow{font-family:"DM Sans",sans-serif;font-weight:600}
+
+
+/* V10 — interactive experiment styling */
+.quizShell{position:relative}
+.quizShell::before{
+  content:"";position:absolute;inset:12% -8% -8%;pointer-events:none;
+  background:radial-gradient(circle at 15% 25%,rgba(177,140,255,.10),transparent 24%),
+             radial-gradient(circle at 85% 70%,rgba(77,214,255,.08),transparent 26%);
+  filter:blur(30px);opacity:.9;
+}
+.quizMeta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 18px;
+  font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.65}
+.quizPill{border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.035)}
+.quizQuestion{position:relative;border:1px solid rgba(255,255,255,.13);border-radius:18px;padding:26px 24px 28px;
+  background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  box-shadow:inset 0 1px rgba(255,255,255,.05),0 18px 55px rgba(0,0,0,.18);overflow:hidden}
+.quizQuestion::after{content:"";position:absolute;left:-25%;top:0;width:35%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+  transform:skewX(-18deg);animation:cardSweep 5.5s 1.4s ease-in-out infinite}
+@keyframes cardSweep{0%,72%{transform:translateX(-160%) skewX(-18deg)}88%,100%{transform:translateX(420%) skewX(-18deg)}}
+.quizQuestion .question{margin:0;color:#f8f8ff;text-shadow:0 2px 20px rgba(0,0,0,.25)}
+.quizQuestion .questionType::after{background:#fff}
+.analysisNote{min-height:16px;margin-top:10px;font-family:"Space Mono",monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.42}
+.answer{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.045);color:#f7f7fb;
+  transition:transform .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease}
+.answer:hover:not(:disabled){transform:translateY(-2px);background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.28);box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.answer:active:not(:disabled){transform:translateY(0) scale(.985)}
+.soundToggle{position:fixed;right:18px;top:16px;z-index:50;border:1px solid rgba(255,255,255,.16);
+  color:rgba(255,255,255,.72);background:rgba(10,12,30,.38);backdrop-filter:blur(10px);border-radius:999px;
+  padding:7px 10px;font:600 9px/1 "Space Mono",monospace;letter-spacing:.12em;cursor:pointer;opacity:.7}
+.soundToggle:hover{opacity:1}
+
+
+/* V11: loud, unmistakable quiz feedback */
+.quizAnswer.correct{
+  border:2px solid rgba(75,220,125,.95)!important;
+  box-shadow:0 0 0 3px rgba(75,220,125,.16),0 10px 30px rgba(40,170,90,.18)!important;
+  background:rgba(75,220,125,.13)!important;
+  color:#f5fff8!important;
+}
+.quizAnswer.wrong{
+  border:2px solid rgba(255,75,90,.98)!important;
+  box-shadow:0 0 0 3px rgba(255,75,90,.14),0 10px 30px rgba(210,45,65,.18)!important;
+  background:rgba(255,75,90,.13)!important;
+  color:#fff6f7!important;
+  animation:wrongShake .34s ease;
+}
+@keyframes wrongShake{
+  20%{transform:translateX(-7px)}40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}80%{transform:translateX(3px)}
+  100%{transform:none}
+}
+.quizFeedback{
+  min-height:24px;
+  margin-top:14px;
+  font-weight:700;
+  letter-spacing:.04em;
+  opacity:0;
+  transform:translateY(5px);
+  transition:.25s ease;
+}
+.quizFeedback.show{opacity:1;transform:none}
+.quizFeedback.good{color:#74f0a0}
+.quizFeedback.bad{color:#ff7d89}
+.soundBadge{
+  position:fixed!important;
+  right:18px!important;
+  bottom:18px!important;
+  z-index:50!important;
+  background:rgba(7,10,25,.92)!important;
+  border:1px solid rgba(255,255,255,.32)!important;
+  color:#fff!important;
+  box-shadow:0 8px 30px rgba(0,0,0,.35)!important;
+}
+
+
+.answers .answer.correct{border:2px solid rgba(75,220,125,.98)!important;box-shadow:0 0 0 3px rgba(75,220,125,.16),0 12px 34px rgba(40,170,90,.18)!important;background:rgba(75,220,125,.14)!important;color:#f5fff8!important}
+.answers .answer.wrong{border:2px solid rgba(255,75,90,.98)!important;box-shadow:0 0 0 3px rgba(255,75,90,.14),0 12px 34px rgba(210,45,65,.18)!important;background:rgba(255,75,90,.14)!important;color:#fff6f7!important;animation:wrongShake .34s ease}
+
+.audioNotice{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+  z-index:80;padding:8px 14px;border-radius:999px;
+  background:rgba(10,12,24,.88);color:#fff;border:1px solid rgba(255,255,255,.25);
+  font:600 12px/1 "DM Sans",sans-serif;letter-spacing:.06em;
+  opacity:0;pointer-events:none;transition:opacity .35s ease;
+}
+.audioNotice.show{opacity:1}
+
+
+.introOverlay{
+  position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 35%,rgba(60,75,125,.30),transparent 42%),#080b16;
+  color:#fff;transition:opacity .7s ease,visibility .7s ease;
+}
+.introOverlay.hide{opacity:0;visibility:hidden;pointer-events:none}
+.introPanel{width:min(720px,90vw);text-align:center;padding:48px 30px}
+.introKicker{font:700 12px/1 "DM Sans",sans-serif;letter-spacing:.28em;opacity:.65;margin-bottom:22px}
+.introTitle{font-family:"Playfair Display",Georgia,serif;font-size:clamp(42px,7vw,76px);line-height:1.02;font-weight:600;margin:0 0 20px}
+.introCopy{font:400 16px/1.8 "DM Sans",sans-serif;color:rgba(255,255,255,.72);max-width:570px;margin:0 auto 30px}
+.introBtn{min-width:190px}
+.namePanel{display:none}
+.namePanel.show{display:block}
+.nameInput{
+  width:min(390px,88vw);padding:15px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.07);color:#fff;text-align:center;font:500 17px "DM Sans",sans-serif;
+  outline:none;transition:.25s;
+}
+.nameInput:focus{border-color:rgba(255,255,255,.6);box-shadow:0 0 0 4px rgba(255,255,255,.07)}
+.nameResult{min-height:100px;margin:24px auto 10px;font-family:"Playfair Display",Georgia,serif;font-size:clamp(22px,4vw,34px)}
+.nameSmall{font:500 12px "Space Mono",monospace;letter-spacing:.12em;opacity:.55}
+.princessTag{
+  position:fixed;top:18px;right:18px;z-index:40;padding:8px 13px;border-radius:999px;
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);
+  color:#fff;font:700 11px "DM Sans",sans-serif;letter-spacing:.13em;
+  backdrop-filter:blur(12px);
+}
+
+
+.introOverlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+background:radial-gradient(circle at 50% 30%,rgba(85,100,170,.30),transparent 45%),#080b16;
+color:#fff;opacity:1;visibility:visible;transition:opacity .75s ease,visibility .75s ease}
+.introOverlay.hide{opacity:0;visibility:hidden;pointer-events:none}
+.introPanel{width:min(720px,90vw);text-align:center;padding:48px 28px}
+.introKicker{font:700 11px/1 "DM Sans",sans-serif;letter-spacing:.30em;opacity:.62;margin-bottom:24px}
+.introTitle{font-family:"Playfair Display",Georgia,serif;font-size:clamp(44px,7vw,78px);line-height:1.02;font-weight:600;margin:0 0 20px}
+.introCopy{font:400 16px/1.8 "DM Sans",sans-serif;color:rgba(255,255,255,.72);max-width:590px;margin:0 auto 30px}
+.introBtn{min-width:190px}
+.namePanel{display:none}.namePanel.show{display:block}
+.nameInput{width:min(390px,88vw);padding:15px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.25);
+background:rgba(255,255,255,.07);color:#fff;text-align:center;font:500 17px "DM Sans",sans-serif;outline:none}
+.nameInput:focus{border-color:rgba(255,255,255,.6);box-shadow:0 0 0 4px rgba(255,255,255,.07)}
+.nameResult{min-height:100px;margin:24px auto 10px;font-family:"Playfair Display",Georgia,serif;font-size:clamp(22px,4vw,34px)}
+.nameSmall{font:600 11px "Space Mono",monospace;letter-spacing:.13em;opacity:.55}
+.princessTag{position:fixed;top:18px;right:18px;z-index:9000;padding:8px 13px;border-radius:999px;
+background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);color:#fff;
+font:700 11px "DM Sans",sans-serif;letter-spacing:.13em;backdrop-filter:blur(12px)}
+
+
+/* V17 — spacious, elegant welcome typography */
+.introPanel{width:min(680px,90vw);padding:64px 30px}
+.introKicker{font-family:"Space Mono",monospace;letter-spacing:.24em;margin-bottom:30px;opacity:.48}
+.introTitle{font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(58px,9vw,94px);font-weight:500;letter-spacing:.015em;line-height:.95;margin:0 0 34px}
+.introCopy{font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(20px,2.5vw,25px);line-height:1.75;color:rgba(255,255,255,.78);max-width:500px;margin:0 auto 42px}
+.introCopy em{font-style:italic;color:rgba(255,255,255,.95)}
+.introHint{margin-top:24px;font:500 10px/1.5 "Space Mono",monospace;letter-spacing:.12em;opacity:.35;text-transform:uppercase}
+.nameResult{margin:34px auto 18px;min-height:112px}
+@media(max-width:600px){.introPanel{padding:48px 22px}.introTitle{font-size:clamp(52px,16vw,76px);margin-bottom:28px}.introCopy{font-size:20px;line-height:1.65;margin-bottom:34px}}
+
+/* V18 — brighter welcome palette + live intro typewriter */
+.introOverlay{
+  background:
+    radial-gradient(circle at 18% 18%,rgba(255,82,170,.32),transparent 28%),
+    radial-gradient(circle at 84% 22%,rgba(80,150,255,.30),transparent 30%),
+    radial-gradient(circle at 50% 88%,rgba(155,70,255,.25),transparent 36%),
+    linear-gradient(135deg,#100d2b 0%,#17134a 48%,#240d3d 100%);
+}
+.introAtmosphere span{
+  background:rgba(255,255,255,.95);
+  box-shadow:0 0 22px rgba(255,110,205,.9),0 0 40px rgba(91,145,255,.45);
+}
+.introKicker{color:rgba(255,190,235,.88);opacity:.78}
+.introCopy{color:rgba(255,255,255,.90);text-shadow:0 1px 18px rgba(0,0,0,.22)}
+.introCopy strong,.introCopy em{color:#fff}
+.introType{display:inline;white-space:pre-wrap}
+.introType::after{content:"";display:inline-block;width:2px;height:1em;margin-left:5px;vertical-align:-.08em;background:currentColor;animation:introCaret .7s steps(1,end) infinite}
+.introType.done::after{animation:none;opacity:0}
+@keyframes introCaret{50%{opacity:0}}
+.introPanel{padding-top:72px;padding-bottom:72px}
+.introCopy{max-width:560px}
+.nameResult{color:#fff}
+.nameInput{background:rgba(255,255,255,.11);border-color:rgba(255,180,230,.38);box-shadow:0 10px 45px rgba(0,0,0,.16)}
+.nameInput:focus{border-color:rgba(255,205,240,.85);box-shadow:0 0 0 4px rgba(255,110,205,.13),0 10px 45px rgba(0,0,0,.18)}
+.introBtn{box-shadow:0 12px 35px rgba(255,74,180,.16)}
+@media(max-width:600px){.introPanel{padding-top:52px;padding-bottom:52px}.introCopy{line-height:1.8}}
+
+/* V18 — welcoming experiment atmosphere */
+.introAtmosphere{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.introAtmosphere span{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.75);box-shadow:0 0 18px rgba(170,190,255,.55);opacity:.45;animation:driftDot 8s ease-in-out infinite}
+.introAtmosphere span:nth-child(1){left:13%;top:22%;animation-delay:-1s}.introAtmosphere span:nth-child(2){left:78%;top:18%;animation-delay:-4s}
+.introAtmosphere span:nth-child(3){left:84%;top:73%;animation-delay:-6s}.introAtmosphere span:nth-child(4){left:22%;top:79%;animation-delay:-2.5s}.introAtmosphere span:nth-child(5){left:51%;top:11%;animation-delay:-5s}
+@keyframes driftDot{50%{transform:translate3d(18px,-12px,0) scale(1.8);opacity:.85}}
+.introPanel{position:relative;z-index:2}
+.introTitle{animation:introTitleIn .9s cubic-bezier(.2,.8,.2,1) both}
+.introCopy{animation:introCopyIn .8s .12s ease both}
+.introBtn{animation:introButtonIn .7s .22s ease both}
+.introHint{margin-top:18px;font:500 10px/1.4 "Space Mono",monospace;letter-spacing:.08em;color:rgba(255,255,255,.34);text-transform:uppercase}
+@keyframes introTitleIn{from{opacity:0;transform:translateY(18px) scale(.97);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+@keyframes introCopyIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes introButtonIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.nameResult b{font-weight:600}
+
+</style>
+</head>
+<body>
+<button class="soundToggle" id="soundToggle" onclick="toggleSound()">SOUND: ON</button>
+<canvas id="liquidCanvas"></canvas>
+<div id="dissolveLight"></div>
+<div id="revealWash"></div>
+<div id="centerBloom"></div>
+<div id="glitchScreen">
+  <div class="glitchBox">
+    <div class="glitchLine">FINAL RESULT ANALYSIS</div>
+    <div class="glitchBar"><i></i></div>
+    <div class="glitchError">SYSTEM ERROR</div>
+    <div class="glitchLine">Unexpected result detected</div>
+    <div class="glitchLine">Rebuilding interface...</div>
+  </div>
+</div>
+
+<div id="garden">
+  <div class="gardenMist"></div>
+  <div id="blossoms"></div>
+  <div id="petals"></div>
+</div>
+
+<!-- WELCOME FLOW: Page 0 → Intro → Name -->
+<div class="introOverlay" id="introOverlay">
+  <div class="introAtmosphere" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="introPanel">
+    <section id="welcomePanel">
+      <div class="introKicker">THE HUMAN MIND · CLASSIFIED EXPERIMENT</div>
+      <h1 class="introTitle">WELCOME</h1>
+      <p class="introCopy"><span class="introType" id="welcomeType"></span></p>
+      <button class="answer next introBtn" id="beginBtn">BEGIN</button>
+      <div class="introHint">A short experience · no preparation required</div>
+    </section>
+
+    <section id="aboutPanel" style="display:none">
+      <div class="introKicker">THE HUMAN MIND</div>
+      <h1 class="introTitle">A Tiny Test</h1>
+      <p class="introCopy"><span class="introType" id="aboutType"></span></p>
+      <button class="answer next introBtn" id="continueIntroBtn">CONTINUE</button>
+    </section>
+
+    <section id="namePanel" class="namePanel">
+      <div class="introKicker">IDENTIFICATION REQUIRED</div>
+      <h1 class="introTitle">Before we begin...</h1>
+      <p class="introCopy"><span class="introType" id="nameType"></span></p>
+      <input class="nameInput" id="nameInput" maxlength="40" autocomplete="off" placeholder="Enter your name" aria-label="Enter your name">
+      <div class="nameResult" id="nameResult"></div>
+      <div id="nameContinue"><button class="answer next introBtn" id="nameBtn">THAT'S ME</button></div>
+    </section>
+  </div>
+</div>
+<div class="princessTag" id="princessTag" style="display:none">PRINCESS · TEST</div>
+
+<main class="app">
+<section class="card" id="card">
+<div class="top"><span>THE HUMAN MIND</span><span id="stage">01 / 04</span></div>
+<div class="progress"><i id="bar"></i></div>
+<div id="content"></div>
+</section>
+</main>
+
+<script>
+window.quizName="Princess";
+const quiz=[
+{q:"Which number comes next? 2, 4, 8, 16, ...",a:["18","24","32","34"],correct:2},
+{q:"A clock shows 3:00. What is the angle between its hands?",a:["0°","45°","90°","180°"],correct:2},
+{q:"Which word does NOT belong with the others?",a:["River","Ocean","Mountain","Lake"],correct:2},
+{q:"Final question: choose the answer that feels the most like you.",a:["Calm and logical","Creative and curious","A little bit of everything","I refuse to be analyzed"],correct:null}
+];
+let qi=0,noCount=0; let romanticStep=0;
+const content=document.getElementById("content"),bar=document.getElementById("bar"),stage=document.getElementById("stage");
+document.addEventListener("pointerdown",()=>unlockAudio(),{once:true});
+
+
+/* V10 sound design — synthesized, lightweight, no external audio files */
+let audioCtx=null, soundOn=true, musicTimer=null, musicNodes=[];
+function initAudio(){
+  if(audioCtx){
+    if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+    return;
+  }
+  try{
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+  }catch(e){return;}
+}
+function unlockAudio(){
+  initAudio();
+  if(audioCtx && audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+}
+function tone(freq=660,dur=.18,type="sine",gain=.18,delay=0){
+  if(!soundOn) return;
+  unlockAudio();
+  if(!audioCtx) return;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  const start=audioCtx.currentTime+delay;
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,start);
+  g.gain.exponentialRampToValueAtTime(gain,start+.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,start+dur);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(start); o.stop(start+dur+.03);
+}
+function clickSound(){tone(720,.10,"square",.075);setTimeout(()=>tone(980,.09,"square",.055),75)}
+function correctSound(){tone(560,.14,"triangle",.12);tone(760,.16,"triangle",.12,.08);tone(1040,.24,"sine",.10,.18)}
+function typeTick(){if(!soundOn)return;tone(Math.random()>.5?420:500,.045,"square",.045)}
+function wrongSound(){
+  tone(180,.18,"sawtooth",.13);
+  setTimeout(()=>tone(125,.24,"sawtooth",.11),120);
+}
+function glitchSound(){
+  if(!soundOn)return;initAudio();if(!audioCtx)return;
+  const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type="sawtooth";o.frequency.setValueAtTime(95,t);o.frequency.exponentialRampToValueAtTime(42,t+.45);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.045,t+.025);g.gain.exponentialRampToValueAtTime(.0001,t+.5);
+  o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.55);tone(48,.35,"square",.012,.08);
+}
+function stopMusic(){musicNodes.forEach(n=>{try{n.stop()}catch(e){}});musicNodes=[];if(musicTimer){clearInterval(musicTimer);musicTimer=null}}
+function startGentleMusic(){
+  if(!soundOn)return;initAudio();if(!audioCtx)return;stopMusic();
+  const master=audioCtx.createGain();master.gain.setValueAtTime(.0001,audioCtx.currentTime);
+  master.gain.exponentialRampToValueAtTime(.018,audioCtx.currentTime+3.5);master.connect(audioCtx.destination);
+  const chords=[[261.63,329.63,392],[220,277.18,329.63],[246.94,311.13,369.99],[196,246.94,293.66]];let idx=0;
+  function chord(){
+    if(!soundOn)return;const now=audioCtx.currentTime;
+    chords[idx%chords.length].forEach((f,j)=>{
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type="sine";o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.012/(j+1),now+1.4);
+      g.gain.exponentialRampToValueAtTime(.0001,now+4.6);o.connect(g);g.connect(master);o.start(now);o.stop(now+4.8);musicNodes.push(o);
+    });idx++;
+  }
+  chord();musicTimer=setInterval(chord,4300);
+}
+function toggleSound(){
+  soundOn=!soundOn;
+  if(!soundOn){ stopRomanticMusic(); stopMusic(); }
+  else { ensureAudio(); if(document.body.classList.contains("romantic")) startRomanticMusic(); }
+  const b=document.getElementById("soundToggle");
+  if(b)b.textContent="SOUND: "+(soundOn?"ON":"OFF");
+}
+
+function render(){
+const x=quiz[qi];bar.style.width=((qi+1)/4*100)+"%";stage.textContent=`0${qi+1} / 04`;
+content.innerHTML=`
+<div class="quizShell">
+  <div class="quizMeta"><span class="quizPill">${(window.quizName||"Princess").toUpperCase()} · LOGIC</span><span>TEST 0${qi+1}</span></div>
+  <h1><span class="heroText softFlicker">${qi===0?"A little test of the human mind.":"Keep going."}</span></h1>
+  <p>${qi===0?"Four questions. A couple of minutes. Nothing strange going on here.":"Your result is taking shape."}</p>
+  <div class="quizQuestion"><div class="question"><span class="questionType"></span></div></div>
+  <div class="analysisNote" id="analysisNote">WAITING FOR RESPONSE...</div>
+  <div class="answers quizAnswers">${x.a.map((a,i)=>`<button class="answer quizAnswer" onclick="check(${i})">${a}</button>`).join("")}</div>
+  <div class="feedback" id="feedback"></div>
+  <div class="small">No personal information is collected.</div>
+</div>`;
+animateNewText();typeQuestion(x.q,true);
+}
+function check(i){
+v14Click();
+const f=document.getElementById("feedback"),x=quiz[qi];
+const buttons=[...document.querySelectorAll(".answers .answer")];
+buttons.forEach(b=>b.classList.remove("correct","wrong"));
+const chosen=buttons[i];
+if(x.correct!==null && i!==x.correct){
+  if(chosen) chosen.classList.add("wrong");
+  f.className="feedback bad show";f.innerHTML="<strong>Ohoo...</strong><br>Not quite. Let's try that one again.";v14Wrong();
+  return;
+}
+if(chosen) chosen.classList.add("correct");
+f.className="feedback good show"; v14Correct();
+const lines=["Correct. Well done.","Nice one. That was quick.","Very good. Your brain is awake.","Correct. Nicely done."];
+f.innerHTML=`<strong>${lines[Math.floor(Math.random()*lines.length)]}</strong><br>${x.correct!==null?"+100 brain points.":"Interesting choice."}`;
+document.querySelectorAll(".answers .answer").forEach(b=>b.disabled=true);
+setTimeout(()=>{if(qi<3){qi++;render()}else{startTransition()}},900);
+}
+
+function startTransition(){
+v14Boom();
+
+transitionBoom();
+
+initAudio();glitchSound();
+document.getElementById("card").classList.add("dissolve");
+
+/* First: the quiz freezes and appears to fail. */
+const glitch=document.getElementById("glitchScreen");
+glitch.classList.add("active");
+
+/* Then the glitch tears open into the color-dissolve. */
+setTimeout(()=>{
+glitch.style.display="none";
+document.getElementById("liquidCanvas").classList.add("active");
+startCanvas();
+document.getElementById("dissolveLight").classList.add("active");
+document.getElementById("revealWash").classList.add("active");
+},2050);
+
+/* The new background replaces the old one during the dissolve. */
+setTimeout(()=>document.body.classList.add("romantic"),2300);
+setTimeout(()=>document.body.classList.add("gardenReady"),3000);
+
+/* Let the new world breathe before any petals appear. */
+setTimeout(()=>document.getElementById("centerBloom").classList.add("active"),3300);
+
+/* Petals deliberately wait until everything has settled. */
+setTimeout(()=>document.body.classList.add("petalRain"),7000);
+
+setTimeout(()=>{
+document.getElementById("liquidCanvas").classList.remove("active");
+document.getElementById("dissolveLight").classList.remove("active");
+document.getElementById("revealWash").classList.remove("active");
+document.getElementById("card").classList.remove("dissolve");
+showRomantic();
+},5200);
+}
+
+
+
+function markQuizAnswer(btn,isCorrect){
+  const group=btn.closest(".answers") || btn.parentElement;
+  group.querySelectorAll(".quizAnswer").forEach(b=>b.disabled=true);
+  btn.classList.add(isCorrect?"correct":"wrong");
+  const fb=group.parentElement.querySelector(".quizFeedback") || document.createElement("div");
+  if(!fb.parentElement){
+    fb.className="quizFeedback";
+    group.after(fb);
+  }
+  fb.className="quizFeedback show "+(isCorrect?"good":"bad");
+  fb.textContent=isCorrect?"CORRECT — RESPONSE RECORDED":"NOT QUITE — TRY AGAIN";
+  if(isCorrect) v14Correct(); else v14Wrong();
+  return isCorrect;
+}
+
+
+/* V12 audio engine: intentionally audible, but still soft enough for the romantic section. */
+let romanticMusicTimer=null, romanticMusicOn=false, audioNoticeTimer=null;
+
+function ensureAudio(){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended") audioCtx.resume();
+    return true;
+  }catch(e){ return false; }
+}
+function audibleTone(freq,dur=.16,type="sine",gain=.18,when=0){
+  if(!soundOn || !ensureAudio()) return;
+  const now=audioCtx.currentTime+when;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,now);
+  g.gain.setValueAtTime(.0001,now);
+  g.gain.exponentialRampToValueAtTime(Math.max(.0002,gain),now+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+  o.connect(g);g.connect(audioCtx.destination);
+  o.start(now);o.stop(now+dur+.04);
+}
+function transitionBoom(){
+  if(!soundOn || !ensureAudio()) return;
+  audibleTone(78,.48,"sine",.34,0);
+  audibleTone(54,.58,"sawtooth",.22,.035);
+  audibleTone(180,.13,"square",.20,.04);
+  audibleTone(92,.34,"triangle",.18,.18);
+}
+function errorFlashSound(){
+  if(!soundOn || !ensureAudio()) return;
+  audibleTone(150,.18,"square",.30,0);
+  audibleTone(72,.32,"sawtooth",.27,.10);
+  audibleTone(260,.11,"square",.22,.28);
+  audibleTone(52,.42,"sine",.28,.36);
+}
+function typeTick(){
+  if(!soundOn || !ensureAudio()) return;
+  audibleTone(520+Math.random()*180,.055,"square",.075);
+}
+function correctFeedbackSound(){
+  if(!soundOn || !ensureAudio()) return;
+  audibleTone(523,.16,"triangle",.24,0);
+  audibleTone(659,.18,"triangle",.25,.10);
+  audibleTone(784,.28,"sine",.23,.22);
+}
+function wrongFeedbackSound(){
+  if(!soundOn || !ensureAudio()) return;
+  audibleTone(185,.20,"sawtooth",.28,0);
+  audibleTone(130,.30,"sawtooth",.25,.13);
+}
+function answerClickSound(){
+  if(!soundOn || !ensureAudio()) return;
+  audibleTone(690,.09,"square",.14,0);
+  audibleTone(910,.08,"square",.10,.065);
+}
+
+/* Gentle but clearly audible romantic music: a repeating soft four-chord pad/arpeggio. */
+function startRomanticMusic(){
+  if(!soundOn || !ensureAudio() || romanticMusicOn) return;
+  romanticMusicOn=true;
+  const progression=[
+    [261.63,329.63,392.00], // C
+    [220.00,277.18,329.63], // Am
+    [174.61,220.00,261.63], // F
+    [196.00,246.94,293.66]  // G
+  ];
+  let step=0;
+  function playBar(){
+    if(!romanticMusicOn || !soundOn) return;
+    const chord=progression[step%progression.length];
+    chord.forEach((f,j)=>{
+      audibleTone(f,1.9,"sine",.075, j*.035);
+      audibleTone(f*2,1.35,"sine",.032,.18+j*.035);
+    });
+    audibleTone(chord[0]*4,.55,"triangle",.04,.42);
+    step++;
+    romanticMusicTimer=setTimeout(playBar,1750);
+  }
+  playBar();
+}
+function stopRomanticMusic(){
+  romanticMusicOn=false;
+  if(romanticMusicTimer) clearTimeout(romanticMusicTimer);
+  romanticMusicTimer=null;
+}
+function showAudioNotice(){
+  const n=document.getElementById("audioNotice");
+  if(!n)return;
+  n.classList.add("show");
+  clearTimeout(audioNoticeTimer);
+  audioNoticeTimer=setTimeout(()=>n.classList.remove("show"),2200);
+}
+function startAudioOnFirstInteraction(){
+  ensureAudio();
+  if(soundOn) showAudioNotice();
+  window.removeEventListener("pointerdown",startAudioOnFirstInteraction);
+  window.removeEventListener("keydown",startAudioOnFirstInteraction);
+}
+window.addEventListener("pointerdown",startAudioOnFirstInteraction,{once:true});
+window.addEventListener("keydown",startAudioOnFirstInteraction,{once:true});
+
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");
+  if(b && !b.dataset.audioClicks){
+    b.dataset.audioClicks="1";
+    v14Click();
+  }
+},true);
+
+
+function v14Audio(){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended") audioCtx.resume();
+    return true;
+  }catch(e){return false}
+}
+function v14Tone(freq,dur=.16,type="sine",gain=.18,delay=0){
+  if(!soundOn || !v14Audio())return;
+  const now=audioCtx.currentTime+delay,o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,now);
+  g.gain.setValueAtTime(.0001,now);
+  g.gain.exponentialRampToValueAtTime(gain,now+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+  o.connect(g);g.connect(audioCtx.destination);o.start(now);o.stop(now+dur+.04);
+}
+function v14Click(){v14Tone(650,.10,"square",.18);v14Tone(900,.08,"square",.13,.07)}
+function v14Correct(){v14Tone(523,.17,"triangle",.28);v14Tone(659,.20,"triangle",.27,.10);v14Tone(784,.30,"sine",.25,.23)}
+function v14Wrong(){v14Tone(180,.22,"sawtooth",.30);v14Tone(125,.32,"sawtooth",.28,.13)}
+function v14Type(){v14Tone(560+Math.random()*180,.052,"square",.085)}
+function v14Name(){v14Tone(440,.15,"triangle",.18);v14Tone(660,.22,"sine",.20,.10)}
+function v14Boom(){
+  if(!soundOn || !v14Audio())return;
+  v14Tone(58,.72,"sine",.48);
+  v14Tone(82,.48,"sawtooth",.32,.025);
+  v14Tone(155,.18,"square",.30,.055);
+  v14Tone(44,.85,"sine",.34,.12);
+}
+function v14Error(){
+  v14Tone(135,.20,"square",.34);
+  v14Tone(72,.34,"sawtooth",.30,.10);
+  v14Tone(245,.12,"square",.24,.27);
+}
+let v14MusicTimer=null,v14Music=false;
+function v14MusicStart(){
+  if(!soundOn||v14Music||!v14Audio())return;
+  v14Music=true;
+  const chords=[[261.63,329.63,392],[220,277.18,329.63],[174.61,220,261.63],[196,246.94,293.66]];
+  let s=0;
+  function bar(){
+    if(!v14Music||!soundOn)return;
+    const c=chords[s%4];
+    c.forEach((f,j)=>v14Tone(f,1.7,"sine",.115,j*.05));
+    v14Tone(c[1]*2,1.15,"triangle",.055,.25);
+    v14Tone(c[2]*2,1.0,"sine",.045,.62);
+    s++;v14MusicTimer=setTimeout(bar,1650);
+  }
+  bar();
+}
+function v14MusicStop(){v14Music=false;clearTimeout(v14MusicTimer);v14MusicTimer=null}
+
+
+function typeQuestion(text,withSound=false){
+  const q=document.querySelector(".questionType");
+  if(!q)return;
+  if(window.__questionTypeTimer)clearTimeout(window.__questionTypeTimer);
+  q.textContent="";
+  q.classList.remove("done");
+  let i=0;
+  const speed=withSound?38:32;
+  function tick(){
+    if(!document.body.contains(q))return;
+    if(i<text.length){
+      const ch=text[i++];
+      q.textContent+=ch;
+      if(withSound && ch.trim() && !/[.,!?]/.test(ch))typeTick();
+      const pause=/[.!?]/.test(ch)?150:ch===","?105:speed;
+      window.__questionTypeTimer=setTimeout(tick,pause);
+    }else{
+      q.classList.add("done");
+      const n=document.getElementById("analysisNote");
+      if(n)n.textContent=withSound?"RESPONSE READY.":"QUESTION COMPLETE.";
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function animateNewText(){
+  const h=document.querySelector("#content .heroText");
+  if(h){requestAnimationFrame(()=>{h.classList.add("shimmer")})}
+}
+
+function showRomantic(){
+setTimeout(v14MusicStart,1500);
+
+setTimeout(startRomanticMusic,1400);
+
+romanticStep=1;
+document.getElementById("card").classList.remove("dissolve");
+stage.textContent="THE REAL QUESTION";bar.style.width="100%";
+content.innerHTML=`
+<div class="eyebrow">The quiz was only an excuse.</div>
+<h1><span class="heroText softFlicker">Okay... one real question.</span></h1>
+<p>I want you to answer this one honestly.</p>
+<div class="question"><span class="questionType"></span></div>
+<div class="answers">
+<button class="answer next" onclick="reaction1()">Yes</button>
+<button class="answer" onclick="nope()">No</button>
+</div>`;
+animateNewText();
+typeQuestion("Have you ever thought about what it would be like if we had a future together?",true);
+}
+
+function reaction1(){
+content.innerHTML=`
+<div class="eyebrow">Answer received</div>
+<div class="reactionMark">♥</div><h1 class="reactionTitle"><span class="heroText softFlicker">I knew it.</span></h1>
+<p>Maybe I was hoping you would say that.</p>
+<div class="question">But I still have one more thing to ask.</div>
+<div class="answers"><button class="answer next" onclick="rom2()">Continue</button></div>`;
+animateNewText();
+}
+
+function rom2(){
+romanticStep=2;
+content.innerHTML=`
+<div class="eyebrow">One more thing</div>
+<h1><span class="heroText softFlicker">Okay... I'll be honest.</span></h1>
+<p>I don't mean something temporary.</p>
+<div class="question"><span class="questionType"></span></div>
+<div class="answers">
+<button class="answer next" onclick="reaction2()">Yes</button>
+<button class="answer" onclick="nope()">No</button>
+</div>`;
+animateNewText();
+typeQuestion("Would you give me a chance to make this real, with respect and family in mind?",true);
+}
+
+function reaction2(){
+content.innerHTML=`
+<div class="eyebrow">Answer received</div>
+<div class="reactionMark">✦</div><h1 class="reactionTitle"><span class="heroText softFlicker">Yeah... finally.</span></h1>
+<p>You have no idea how much that answer means.</p>
+<div class="question">There is only one question left.</div>
+<div class="answers"><button class="answer next" onclick="rom3()">Continue</button></div>`;
+animateNewText();
+}
+
+function rom3(){
+romanticStep=3;
+content.innerHTML=`
+<div class="eyebrow">The question behind everything</div>
+<h1><span class="heroText softFlicker">So... this is the one.</span></h1>
+<p>No joke this time. Just me asking you directly.</p>
+<div class="question"><span class="questionType"></span></div>
+<div class="answers">
+<button class="answer next" onclick="reactionFinal()">Yes</button>
+<button class="answer" onclick="nope()">No</button>
+</div>`;
+animateNewText();
+typeQuestion("If I came to you with the intention of nikah and a real future together, would you choose me?",true);
+}
+
+function reactionFinal(){
+content.innerHTML=`
+<div class="eyebrow">Answer received</div>
+<div class="reactionMark">♡</div><h1 class="reactionTitle"><span class="heroText softFlicker">You have no idea.</span></h1>
+<p>How much I wanted to ask you that.</p>
+<div class="question">Maybe now I can finally show you what this whole thing was for.</div>
+<div class="answers"><button class="answer next" onclick="ending()">Continue</button></div>`;
+animateNewText();
+}
+
+
+const noText=[
+["Are you sure?","Think again."],["Hmm...","That answer deserves another thought."],["Really?","You clicked that very confidently."],
+["Wait.","The website is concerned."],["One more thought?","Please reconsider."],["Okay...","I'm not convinced yet."],
+["That was quick.","Try thinking about it for a moment."],["Interesting choice.","The flower department disagrees."],
+["Still no?","Your commitment is impressive."],["No detected.","Reconsideration protocol activated."],
+["11 attempts.","This is getting serious."],["Consulting the relationship department...","Think again."],
+["We're still here.","And so is that No button."],["14 times.","At this point, we're both committed."],
+["Okay, wow.","Respectfully: think again."],["16?","This has become a full-time job."],
+["Four more.","I'm counting."],["18.","Two attempts remain."],["Final warning.","One more thought."],["20.","Thirty more."],
+["21 / 50","You are absolutely committed to this."],["22 / 50","The No button has entered overtime."],["23 / 50","This is becoming a documentary."],
+["24 / 50","Still going. Respect."],["25 / 50","Halfway to defeating the website."],["26 / 50","The garden is waiting."],
+["27 / 50","I have nothing but questions now."],["28 / 50","Are we sure you're sure?"],["29 / 50","The website is tired."],
+["30 / 50","THIRTY."],["31 / 50","This is personal now."],["32 / 50","The relationship department has snacks."],
+["33 / 50","Still no. Incredible."],["34 / 50","You have unlocked stubborn mode."],["35 / 50","The flowers request reconsideration."],
+["36 / 50","I respect the dedication. I fear the dedication."],["37 / 50","Three dozen No answers."],["38 / 50","This button refuses to retire."],
+["39 / 50","One more and we're calling it a career."],["40 / 50","FORTY."],["41 / 50","The website has seen enough."],
+["42 / 50","Yet somehow, we're still here."],["43 / 50","Seven chances left."],["44 / 50","I'm beginning to suspect spam."],
+["45 / 50","Five more. Then I surrender."],["46 / 50","This is legendary."],["47 / 50","Three left."],
+["48 / 50","Two left."],["49 / 50","ONE MORE CHANCE."],["50 / 50","Okay. You have defeated the No button."]
+];
+
+function nope(){
+noCount=Math.min(noCount+1,50);
+const t=noText[noCount-1];
+if(noCount===50){
+content.innerHTML=`<div class="eyebrow">Okay... you win.</div><h1>Okay. You win.</h1><p>You officially defeated the website. I will stop asking.</p><div class="question">Your answer is yours. No more annoying you.</div><div class="answers"><button class="answer next quizAnswer" onclick="finishNo()">Continue</button></div>`;
+return;
+}
+const returnLabel = romanticStep===1 ? "Okay, I'll answer again" : romanticStep===2 ? "Okay, continue" : "Okay, I'll answer again";
+content.innerHTML=`<div class="eyebrow">Just a thought...</div><h1><span class="heroText softFlicker">${t[0]}</span></h1><p>${t[1]}</p><div class="answers"><button class="answer next quizAnswer" onclick="returnToRomanticQuestion()">${returnLabel}</button><button class="answer quizAnswer" onclick="nope()">No, I'm sure.</button></div><div class="noCount">The button is still waiting.</div>`;
+animateNewText();
+}
+
+function returnToRomanticQuestion(){
+  if(romanticStep===1) showRomantic();
+  else if(romanticStep===2) rom2();
+  else rom3();
+}
+
+function yes(){
+content.innerHTML=`
+<div class="eyebrow">Answer received</div>
+<h1>Then let's see where it goes.</h1>
+<p>That was the only answer that really mattered.</p>
+<div class="question">Ready for one last page?</div>
+<div class="answers"><button class="answer next quizAnswer" onclick="ending()">Continue</button></div>`;
+}
+function ending(){
+content.innerHTML=`
+<div class="eyebrow">A little note</div>
+<h1><span class="heroText softFlicker">Before you leave.</span></h1>
+<div class="typewriter" id="typewriter"></div>
+<div class="endingLine">Some stories are worth beginning slowly.</div>
+<div class="answers" id="endingButtons" style="opacity:0;pointer-events:none">
+<button class="answer next" onclick="finishExperience()">Finish</button>
+<button class="answer" onclick="location.reload()">Replay</button>
+</div>`;
+typeEndingText(); 
+}
+function finishNo(){
+content.innerHTML=`
+<div class="eyebrow">No button defeated</div>
+<h1>Fair enough.</h1>
+<p>After fifty attempts, the website finally accepts defeat.</p>
+<div class="question">Whatever the answer, honesty matters more than any button on this page.</div>
+<div class="answers"><button class="answer next quizAnswer" onclick="ending()">Continue</button></div>`;
+}
+
+function typeEndingText(){
+const text=`Some things are easier to say in a quiet moment than out loud.
+
+This little quiz was never really about the questions. It was a small way of leading you somewhere unexpected.
+
+Whatever you choose, let it be honest and let it be yours.
+
+And if this is the beginning of something, maybe it can begin slowly, sincerely, and with good intentions.`;
+const el=document.getElementById("typewriter");
+let i=0;
+const speed=24;
+function write(){
+  if(i<text.length){
+    el.textContent+=text[i++];
+    setTimeout(write,text[i-1]==="."||text[i-1]===","?75:speed);
+  }else{
+    const b=document.getElementById("endingButtons");
+    b.style.transition="opacity .8s ease";
+    b.style.opacity="1";
+    b.style.pointerEvents="auto";
+  }
+}
+write();
+}
+
+function finishExperience(){
+try{sessionStorage.setItem("humanMindFinished","1")}catch(e){}
+document.body.innerHTML=`
+<div style="min-height:100vh;display:grid;place-items:center;background:#140d17;color:#eadde4;font-family:Inter,system-ui;text-align:center;padding:30px">
+<div style="max-width:560px">
+<div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.5">Experience complete</div>
+<h1 style="font-family:Georgia,serif;font-size:clamp(38px,7vw,68px);font-weight:400;margin:20px 0">Thank you for staying until the end.</h1>
+<p style="line-height:1.8;opacity:.65">You can close this page whenever you are ready.</p>
+</div>
+</div>`;
+try{window.close()}catch(e){}
+}
+
+/* Soft flower background exists, but the petal rain is intentionally delayed. */
+const blossoms=document.getElementById("blossoms");
+Array.from({length:8}).forEach((_,i)=>{
+let e=document.createElement("div");e.className="blossom";e.innerHTML='<span></span>';
+e.style.left=(i%2?70+Math.random()*25:-8+Math.random()*25)+"%";
+e.style.top=Math.random()*92+"%";e.style.animationDelay=(-Math.random()*6)+"s";blossoms.appendChild(e);
+});
+for(let i=0;i<62;i++){
+let p=document.createElement("div");p.className="petal";p.style.left=Math.random()*100+"%";
+p.style.animationDuration=(6+Math.random()*11)+"s";p.style.animationDelay=(-Math.random()*14)+"s";
+p.style.setProperty("--drift",(Math.random()*260-130)+"px");document.getElementById("petals").appendChild(p);
+}
+
+/* More organic dissolve: overlapping moving blobs, bloom, dust and radial light. */
+const canvas=document.getElementById("liquidCanvas"),ctx=canvas.getContext("2d");
+let W=0,H=0,animating=false,started=0;
+function resize(){W=innerWidth;H=innerHeight;canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)}
+resize();addEventListener("resize",resize);
+const blobs=Array.from({length:19},()=>({x:Math.random(),y:Math.random(),r:.09+Math.random()*.2,vx:(Math.random()-.5)*.0012,vy:(Math.random()-.5)*.0012,p:Math.random()*6.28}));
+const particles=Array.from({length:330},()=>({x:Math.random(),y:Math.random(),s:.7+Math.random()*3.8,vx:(Math.random()-.5)*.002,vy:(Math.random()-.5)*.002,a:.15+Math.random()*.75}));
+function animate(t){
+if(!animating)return;
+const sec=(t-started)/1000;
+ctx.clearRect(0,0,W,H);
+let base=ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,Math.max(W,H)*.85);
+base.addColorStop(0,"rgba(255,225,233,.96)");
+base.addColorStop(.38,"rgba(212,87,146,.88)");
+base.addColorStop(.7,"rgba(103,37,119,.88)");
+base.addColorStop(1,"rgba(24,7,38,.98)");
+ctx.fillStyle=base;ctx.fillRect(0,0,W,H);
+ctx.globalCompositeOperation="screen";
+blobs.forEach((b,i)=>{
+b.x+=b.vx;b.y+=b.vy;b.p+=.013;
+if(b.x<-.2)b.x=1.2;if(b.x>1.2)b.x=-.2;if(b.y<-.2)b.y=1.2;if(b.y>1.2)b.y=-.2;
+const x=b.x*W+Math.sin(b.p)*W*.075,y=b.y*H+Math.cos(b.p*1.2)*H*.075;
+const r=b.r*Math.max(W,H)*(1+Math.sin(b.p*.7)*.2);
+const g=ctx.createRadialGradient(x,y,0,x,y,r);
+const colors=["rgba(70,24,105,.88)","rgba(146,38,112,.84)","rgba(219,92,155,.78)","rgba(255,190,210,.72)","rgba(247,224,224,.68)"];
+g.addColorStop(0,colors[i%colors.length]);g.addColorStop(.58,colors[(i+1)%colors.length]);g.addColorStop(1,"rgba(255,255,255,0)");
+ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+});
+particles.forEach(p=>{
+p.x+=p.vx;p.y+=p.vy;
+if(p.x<0||p.x>1)p.vx*=-1;if(p.y<0||p.y>1)p.vy*=-1;
+ctx.globalAlpha=p.a*(.45+.55*Math.sin(sec*2+p.x*9));
+ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(p.x*W,p.y*H,p.s,0,Math.PI*2);ctx.fill();
+});
+ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";
+requestAnimationFrame(animate);
+}
+function startCanvas(){animating=true;started=performance.now();requestAnimationFrame(animate)}
+startTransitionCanvas=startCanvas;
+/* Initial quiz render is intentionally delayed until the welcome flow finishes,
+   so Question 1 gets the same live typewriter reveal as later questions. */
+</script>
+<div id="audioNotice" class="audioNotice">SOUND ON</div>
+
+<script>
+(function(){
+  let enteredName = "";
+  const overlay = document.getElementById("introOverlay");
+  const welcome = document.getElementById("welcomePanel");
+  const about = document.getElementById("aboutPanel");
+  const namePanel = document.getElementById("namePanel");
+  const nameInput = document.getElementById("nameInput");
+  const result = document.getElementById("nameResult");
+  const cont = document.getElementById("nameContinue");
+
+  function uiSound(){
+    try{
+      if(typeof v14Click==="function") v14Click();
+      else if(typeof answerClickSound==="function") answerClickSound();
+    }catch(e){}
+  }
+
+  let introTimer=null;
+  function typeIntro(id,text){
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(introTimer)clearTimeout(introTimer);
+    el.textContent="";
+    el.classList.remove("done");
+    let i=0;
+    const speed=34;
+    function tick(){
+      if(!document.body.contains(el))return;
+      if(i<text.length){
+        const ch=text[i++];
+        el.textContent+=ch;
+        if(ch.trim() && typeof typeTick==="function" && !/[.!?]/.test(ch)) typeTick();
+        const pause=/[.!?]/.test(ch)?220:ch===","?120:speed;
+        introTimer=setTimeout(tick,pause);
+      }else{
+        el.classList.add("done");
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  typeIntro("welcomeType",`You have been selected for a very important experiment.\n\nDon't worry.\nIt's probably normal.`);
+  document.getElementById("beginBtn").addEventListener("click",function(){
+    uiSound(); welcome.style.display="none"; about.style.display="block";
+    typeIntro("aboutType",`A short test of logic, instinct, observation and... curiosity.\n\nTake your time.\nAnswer honestly.\nNo cheating.`);
+  });
+  document.getElementById("continueIntroBtn").addEventListener("click",function(){
+    uiSound(); about.style.display="none"; namePanel.classList.add("show");
+    typeIntro("nameType",`Before we begin...\n\nWhat should we call you?`);
+    setTimeout(()=>nameInput.focus(),180);
+  });
+  document.getElementById("nameBtn").addEventListener("click",submitName);
+  nameInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submitName();}});
+
+  function submitName(){
+    uiSound();
+    enteredName=(nameInput.value||"").trim()||"Unknown";
+    const safe=enteredName.replace(/[<>&"]/g,"");
+    window.quizName="Princess";
+    let joke="";
+    if(enteredName.toLowerCase()==="princess") joke="Finally. You got one right already.";
+    else if(enteredName.toLowerCase()==="batman") joke="Batman? That's... concerning. We'll call you Princess anyway.";
+    else joke=safe+"? Nice try. You're Princess here.";
+    result.innerHTML='<div class="nameSmall">NAME DETECTED: '+safe+
+      '</div><br><b>Preferred designation: Princess</b><br><span style="font-size:.65em;opacity:.65">'+joke+'</span>';
+    cont.innerHTML='<button class="answer next introBtn" id="princessBtn">ACCEPT CORRECTION</button>';
+    document.getElementById("princessBtn").addEventListener("click",finishIntro);
+    try{if(typeof v14Name==="function")v14Name();}catch(e){}
+  }
+  function finishIntro(){
+    uiSound();
+    document.getElementById("princessTag").style.display="block";
+    overlay.classList.add("hide");
+    setTimeout(()=>{
+      overlay.remove();
+      render();
+    },800);
+  }
+})();
+</script>
+
+</body>
+</html>
